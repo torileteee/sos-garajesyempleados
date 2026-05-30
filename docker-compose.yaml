@@ -1,0 +1,50 @@
+services:
+  web:
+    image: garajesyempleados:latest
+    ports:
+      - 8081:8081
+    networks:
+      - gye-net
+    depends_on:
+      - db
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/postgres
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD_FILE=/run/secrets/postgres_password
+    secrets:
+      - postgres_password
+  
+  db:
+    image: postgres
+    ports:
+      - 5432:5432
+    networks:
+      - gye-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    environment:
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+networks:
+  gye-net:
+    driver: overlay
+
+volumes:
+  postgres_data:
+    driver: local
+
+secrets:
+  postgres_password:
+    external: true
