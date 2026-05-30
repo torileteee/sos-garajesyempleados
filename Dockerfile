@@ -1,10 +1,15 @@
-#Usar la imagen oficial de openjdk
-FROM openjdk:21-ea-slim-buster
+#Usar la imagen de ubuntu
+FROM ubuntu:24.04
+RUN apt-get update
+RUN apt-get install openjdk-21-jdk -y
+RUN apt-get install maven -y
 #Configuramos el directiorio de trabajo
 WORKDIR /app
 #Copiamos el fichero jar
-COPY target/garajes-y-empleados-0.0.1-SNAPSHOT.jar .
+COPY . .
+#Compilamos el codigo
+RUN mvn clean package -Dmaven.test.skip=true
 #Exponemos el puerto de TomCat
 EXPOSE 8081
 #Comando para ejecutar la aplicación
-CMD ["java", "-jar", "garajes-y-empleados-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "target/garajes-y-empleados-0.0.1-SNAPSHOT.jar"]
